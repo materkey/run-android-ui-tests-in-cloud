@@ -1,0 +1,16 @@
+name: "suite for regular deliveryclub app CI build"
+outputDir: "build/reports/marathon"
+batchingStrategy:
+  type: "isolate"
+retryStrategy:
+  type: "no-retry"
+vendorConfiguration:
+  type: "Android"
+  applicationApk: "app.apk"
+  testApplicationApk: "test.apk"
+  autoGrantPermission: true
+  instrumentationArgs:
+    debug: "false"
+  applicationPmClear: true
+  testApplicationPmClear: true
+testOutputTimeoutMillis: 120000
