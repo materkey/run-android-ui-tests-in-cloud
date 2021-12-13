@@ -30,3 +30,7 @@ output "webserver_sg_arn" {
 output "data_aws_sqs_queue_url" {
   value = data.aws_sqs_queue.terraform_queue.url
 }
+
+output "ec2_global_ips" {
+  value = [aws_spot_instance_request.ui_tests_instance.*.public_ip] // can be null
+}

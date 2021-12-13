@@ -1,3 +1,10 @@
 /venv
 .terraform
 .idea
+terraform_ec2_key.pem
+kaspresso
+app.apk
+test.apk
+terraform.tfstate
+terraform.tfstate.backup
+m_dir

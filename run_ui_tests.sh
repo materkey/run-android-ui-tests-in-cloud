@@ -2,10 +2,12 @@
 
 set -xe
 
-# TODO use secure way to store keys
-export AWS_ACCESS_KEY_ID=XXXXXXXXXXXXX
-export AWS_SECRET_ACCESS_KEY=XXXXXXXXXXXXX
-export AWS_DEFAULT_REGION=us-east-1
+# set aws creds before run this script: https://console.aws.amazon.com/iamv2/home?#/users
+# export AWS_ACCESS_KEY_ID=xxx
+# export AWS_SECRET_ACCESS_KEY=xxx
+export AWS_DEFAULT_REGION=us-east-2
+
+./build_sample_apks.sh
 
 timestamp=$(date +%d-%m-%Y_%H-%M-%S)
 random_string=`uuidgen`

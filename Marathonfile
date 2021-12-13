@@ -1,4 +1,5 @@
-name: "suite for regular deliveryclub app CI build"
+# https://marathonlabs.github.io/marathon/doc/configuration.html
+name: "suite for regular app CI build"
 outputDir: "build/reports/marathon"
 batchingStrategy:
   type: "isolate"
@@ -13,4 +14,4 @@ vendorConfiguration:
     debug: "false"
   applicationPmClear: true
   testApplicationPmClear: true
-testOutputTimeoutMillis: 120000
+testOutputTimeoutMillis: 30000

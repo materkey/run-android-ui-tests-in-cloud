@@ -1,16 +1,13 @@
 provider "aws" {
-  // TODO use secure way to store keys
-  access_key = "XXXXXXXXXXXXXXXXX"
-  secret_key = "XXXXXXXXXXXXXXXXX"
-  region = "us-east-1"
+  region = "us-east-2"
 }
 
 resource "aws_spot_instance_request" "ui_tests_instance" {
   count = 1
-  spot_price = "1.63"
-  ami = "ami-0babb0c4a4e5769b8"
+  spot_price = "1.00" // https://aws.amazon.com/ec2/spot/pricing/
+  ami = "ami-002068ed284fb165b" // replace with ami based on "ami-002068ed284fb165b" Amazon Linux 2 from AMI Catalog with docker and android sdk
   wait_for_fulfillment = false
-  availability_zone = "us-east-1a"
+  availability_zone = "us-east-2b"
   instance_type = "c5.metal"
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
   user_data = templatefile("bootstrap_instance.sh.tpl", {
@@ -74,9 +71,21 @@ resource "aws_iam_role_policy_attachment" "sqs-read-only-policy-attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
 }
 
+resource "tls_private_key" "pk" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
 resource "aws_key_pair" "ssh_key_for_instance" {
   key_name = "keyName${var.task_name}"
-  public_key = "ssh-rsa XXXXXX" // TODO use secure way to store keys
+  public_key = tls_private_key.pk.public_key_openssh
+  provisioner "local-exec" {
+    command = <<-EOT
+      rm -f terraform_ec2_key.pem
+      echo '${tls_private_key.pk.private_key_pem}' > ./terraform_ec2_key.pem
+      chmod 400 ./terraform_ec2_key.pem
+    EOT
+  }
 }
 
 //resource "aws_s3_bucket" "b" {
