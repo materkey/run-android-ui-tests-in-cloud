@@ -2,18 +2,18 @@
 
 ![Diagram](diagram.png)
 
-## requirements:
+## Requirements
 
-terraform to create and destroy aws resources - https://learn.hashicorp.com/tutorials/terraform/install-cli
+- terraform to create and destroy aws resources - https://learn.hashicorp.com/tutorials/terraform/install-cli
 
-aws cli to create s3 bucket and custom ami - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+- aws cli to create s3 bucket and custom ami - https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
 
-aws access key and secret key for terraform and aws cli - https://console.aws.amazon.com/iamv2/home?#/users
+- aws access key and secret key for terraform and aws cli - https://console.aws.amazon.com/iamv2/home?#/users
 
-allure cli to check ui test run reports - https://docs.qameta.io/allure/#_installing_a_commandline
+- allure cli to check ui test run reports - https://docs.qameta.io/allure/#_installing_a_commandline
 
 
-## setup
+## Setup
 
 ### 1. add aws creds to current shell session
 ```
@@ -39,12 +39,13 @@ rm -rf m_dir
 ```
 also replace my-tf-test-bucket-dc with your created s3 bucket name in scripts
 
-### 3. create Amazon Machine Image (ami) with docker, android sdk and pulled container image of android emulator
+### 3. create Amazon Machine Image (ami) with docker, android sdk and pulled container image of android emulator step 1:
 ```
+# before running this script replace ANDROID_SDK_ROOT in build_sample_apks.sh with proper one
 ./run_ui_tests.sh # as main.tf uses ami without docker by default it will be dry run without tests
 ```
 
-### 4. find ip in stdout or using aws web console if it is null and connect using ssh
+### 4. create ami step 2: find public ip in stdout or using aws web console if it is null and connect using ssh
 ```
 # in separate shell session run:
 ssh -i terraform_ec2_key.pem ec2-user@<paste-ip-here>
@@ -80,7 +81,7 @@ sudo chmod 777 $ANDROID_HOME/packages.txt
   echo "extras;google;m2repository"
 } >> $ANDROID_HOME/packages.txt
 
- Update sdk and install components
+# Update sdk and install components
 mkdir $HOME/.android && \
   echo "y" | sudo /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --verbose \
     --sdk_root=$ANDROID_HOME \
@@ -91,38 +92,42 @@ sudo yum -y install android-tools
 sudo pip3 install awscli --force-reinstall --upgrade
 ```
 
-### 5. create ami to use it later for ui test runs then replace main.tf ami with this new ami
+### 5. create ami step 3: create ami to use it later for ui test runs then replace main.tf ami with this new ami
 ```
 aws ec2 create-image --instance-id <paste instance id here example: i-0ab5b74e8629750c9> --name "Android UI tests" --description "An AMI for android UI tests"
 ```
 
-### 6. now you can try to run ui tests example run (currently it uses https://github.com/MarathonLabs/marathon)
+### 6. now you can try to run ui tests example, currently it uses [marathon test runner](https://github.com/MarathonLabs/marathon)
 ```
 ./run_ui_tests.sh
 ```
 after run terraform will destroy aws objects created by ```terraform apply```
 
-### 7. to delete all resourses run
+### 7. also you can manually delete all resourses of current dir run (state of resources stored in .tfstate files)
 ```
 terraform destroy -auto-approve
 ```
-### 8. check results in <task-name>/build/reports/
+### 8. check results in ```<task-name>/build/reports/```
+```
+allure serve <task-name>/build/reports/allure-results
+```
 
-### run can take ~15-20 minutes there is a room for improvement (you can add issues with ideas)
-- 3 min init instance
-- 5-7 min run emulators
-- 2 min kaspresso sample test run
-- 5 min destroy aws resources
 
-### you can write similar scripts for Google Cloud
+## Additional Notes
+- run can take ~15-20 minutes there is a room for improvement (you can add issues with ideas)
+  - 3 min init instance
+  - 5-7 min run emulators
+  - 2 min kaspresso sample test run
+  - 5 min destroy aws resources
+
+- you can write similar scripts for Google Cloud
 ```
 find some info here: https://github.com/google/android-emulator-container-scripts/tree/master/cloud-init
 ```
 
-### also you can build your own android emu docker image based on https://github.com/avito-tech/avito-android/tree/develop/ci/docker
-
-also this is a version that decoupled from avito infrastructure: https://github.com/materkey/avito-android/tree/dc-fresh/ci/docker
-also you can run everything in your own k8s cluster using avito UI tests runner but in is a bit longer story, I can tell it later
+- also you can build your own android emu docker image based on [Avito Android Infrastructure](https://github.com/avito-tech/avito-android/tree/develop/ci/docker)
+  - and this is a version that decoupled from avito infrastructure (this avito runner fork also has allure support for k8s test runs): [Delivery Club fork of Avito Android Infrastructure](https://github.com/materkey/avito-android/tree/dc-fresh/ci/docker)
+  - also you can run everything in your own k8s cluster using avito UI tests runner but it is a bit longer story, later I can tell how I made it in Delivery Club with [Argo k8s Native Automation Platform](https://argoproj.github.io/)
 
 ```
 # 1. build docker-in-docker-image, set env IMAGE_DOCKER_IN_DOCKER
@@ -131,14 +136,21 @@ also you can run everything in your own k8s cluster using avito UI tests runner 
 ./publish_emulator.sh android-emulator 29
 ```
 
-### to show logs you can run this inside vm
+- to show logs you can run this inside vm
 ```
 sudo cat /var/log/cloud-init-output.log
 ```
 
-### this scripts uses kaspresso sample: https://github.com/KasperskyLab/Kaspresso/tree/master/samples/kaspresso-sample
+- this scripts uses kaspresso sample: https://github.com/KasperskyLab/Kaspresso/tree/master/samples/kaspresso-sample
 
-### aws pricing calculations: https://docs.google.com/spreadsheets/d/1PeuTR52vEG0Puv_GRISGrkKroltZ9OjbgfL1OCcepW4/edit#gid=0
+- aws pricing calculations: https://docs.google.com/spreadsheets/d/1PeuTR52vEG0Puv_GRISGrkKroltZ9OjbgfL1OCcepW4/edit#gid=0
 
-### possible issues
+- first prototype for this idea inspired by developing UI tests infrastructure in Delivery Club, then there was a polish step while SDET Hackathon Event [Propeller TestOps Hackathon](https://stayhappening.com/e/propeller-testops-hackathon-E3LUT0XH99MW) with writing this README.md and edit scripts for better user experience
+
+## Resources to learn AWS and Terraform
+English - [A Cloud Guru](https://acloudguru.com)
+
+Russian - [AWS - ADV-IT](https://www.youtube.com/playlist?list=PLg5SS_4L6LYsxrZ_4xE_U95AtGsIB96k9), [Terraform - ADV-IT](https://www.youtube.com/playlist?list=PLg5SS_4L6LYujWDTYb-Zbofdl44Jxb2l8)
+
+## Possible issues
 1. sometimes spot instance request can infinitely be in pending state. try to change availability zone and/or spot_price in main.tf
