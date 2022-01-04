@@ -154,3 +154,6 @@ Russian - [AWS - ADV-IT](https://www.youtube.com/playlist?list=PLg5SS_4L6LYsxrZ_
 
 ## Possible issues
 1. sometimes spot instance request can infinitely be in pending state. try to change availability zone and/or spot_price in main.tf
+
+## TODO
+1. Try https://github.com/remote-android/redroid-doc to avoid using nested virtualization
